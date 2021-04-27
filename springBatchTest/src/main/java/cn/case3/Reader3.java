@@ -2,14 +2,16 @@ package cn.case3;
 
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.NonTransientResourceException;
 import org.springframework.batch.item.ParseException;
 import org.springframework.batch.item.UnexpectedInputException;
+import org.springframework.stereotype.Component;
 
-//@Component
+@Component
 //@Scope(value = "step", proxyMode = ScopedProxyMode.INTERFACES)
-//@StepScope
+@StepScope
 public class Reader3 implements ItemReader<String>{
 
     private int count;

@@ -10,6 +10,10 @@
 	http://www.springframework.org/schema/batch
 	http://www.springframework.org/schema/batch/spring-batch-2.1.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
+    <bean class="org.springframework.batch.core.scope.StepScope">
+        <property name="autoProxy" value="false" />
+    </bean>
+
 <!--    <aop:aspectj-autoproxy proxy-target-class="true"/>-->
     <!--see more in jsrBaseContext.xml-->
 

@@ -1,15 +1,17 @@
 package cn.case3;
 
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
 
 import java.util.Properties;
 
-//@Component
+@Component
 //@Scope(value = "step", proxyMode = ScopedProxyMode.INTERFACES)
-//@StepScope
+@StepScope
 public class Processor3 implements ItemProcessor<String, String> {
 
     @Autowired
