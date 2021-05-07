@@ -1,11 +1,12 @@
 package cn.case5;
 
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
+import org.springframework.batch.core.*;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.partition.support.MultiResourcePartitioner;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
@@ -13,6 +14,7 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +45,7 @@ public class JobConfig5 {
         System.out.println(path);
         reader.setResource(new FileSystemResource(path.substring(6)));
         reader.setStrict(false);
-        reader.setLinesToSkip(1);
+        reader.setLinesToSkip(2);
 
         DefaultLineMapper<String> lineMapper = new DefaultLineMapper<>();
         DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
@@ -72,9 +74,11 @@ public class JobConfig5 {
     }
 
     @Bean
-    public Step stepPartition(Step step) {
+    @JobScope
+    public Step stepPartition(Step step, @Value("file:/#{jobExecutionContext['spiltFilePath']}") Resource[] resource) {
         MultiResourcePartitioner partitioner = new MultiResourcePartitioner();
         partitioner.setKeyName("path");
+//        partitioner.setResources(resource);
         partitioner.setResources(resource);
         //JDK线程池ThreadPoolExecutor
         //spring线程池
@@ -89,6 +93,17 @@ public class JobConfig5 {
                 .step(step)
                 .gridSize(2)
                 .taskExecutor(taskExecutor)
+                .listener(new StepExecutionListener() {
+                    @Override
+                    public void beforeStep(StepExecution stepExecution) {
+                        System.out.println(stepExecution.getJobExecution().getExecutionContext().get("spiltFilePath"));
+                    }
+
+                    @Override
+                    public ExitStatus afterStep(StepExecution stepExecution) {
+                        return null;
+                    }
+                })
                 .build();
     }
 
@@ -103,9 +118,17 @@ public class JobConfig5 {
     }
 
     @Bean
-    public Job job(Step stepPartition) {
+    public Step stepSpilt(Tasklet spiltFileTasklet) {
+        return stepBuilderFactory.get("stepSpilt")
+                .tasklet(spiltFileTasklet)
+                .build();
+    }
+
+    @Bean
+    public Job job(@Qualifier("stepPartition") Step stepPartition,@Qualifier("stepSpilt") Step stepSpilt) {
         return jobBuilderFactory.get("job5")
-                .start(stepPartition)
+                .start(stepSpilt)
+                .next(stepPartition)
                 .build();
     }
 }

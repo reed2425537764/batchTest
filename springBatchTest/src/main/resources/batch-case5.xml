@@ -18,6 +18,10 @@
         <property name="autoProxy" value="false" />
     </bean>
 
+    <bean class="org.springframework.batch.core.scope.JobScope">
+        <property name="autoProxy" value="false" />
+    </bean>
+
     <!--see more in jsrBaseContext.xml-->
 
     <!--配置包扫描-->
